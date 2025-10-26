@@ -1,0 +1,125 @@
+\documentclass[addpoints,a4paper]{exam}
+
+\usepackage{iftex}
+\ifpdftex
+\usepackage[OT4]{fontenc}
+\fi
+
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage[english,polish]{babel}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\newenvironment{desc}{\fontfamily{qcr}\selectfont}{\par}
+
+\lhead{Imię i nazwisko:}
+\rhead{System plików}
+\pointpoints{p.}{p.}
+\boxedpoints
+\footer{}{}{}
+\renewcommand{\thepartno}{\arabic{partno}}
+\renewcommand{\partlabel}{\thepartno.}
+
+\begin{document}
+
+\hqword{Etap}
+\hpword{Punkty}
+\hsword{Wynik}
+\htword{Suma}
+\cellwidth{2cm}
+\noindent \gradetable[h]
+
+\section*{L1: Plan B}
+Kolokwium z Matematyki Dyskretnej poszło w tym roku gorzej, niż się spodziewano. 
+Studenci są załamani i zaczynają szukać wszystkich dostępnych rozwiązań, aby zdać ten przedmiot.
+Na swoje (nie)szczęście, jednemu ze studentów udało włamać się do wewnętrznego, wydziałowego systemu oceniania zadań. W~głowach studentów zrodził się pewien pomysł...
+
+Włamywacz odkrył, że przyznane punkty przechowywane są w pewnych plikach. Pliki te poumieszczane są jednak w losowych katalogach, na różnych poziomach drzewa katalogów, bez ustalonej reguły. Student odkrył tylko, że w katalogu głównym systemu oceniania znajdują się pliki nazwane \verb|grupaN| (gdzie $N$ jest pewną liczbą całkowitą dodatnią), zawierające jedną liczbę całkowitą -- liczebność studentów w~grupie, a pliki z ocenami nazywają się \verb|zMgN| ($M,N$ -- liczby całkowite dodatnie), zawierające tyle liczb całkowitych (oznaczających liczbę punktów za zadanie), ile jest studentów w danej grupie. Liczba w pliku z grupami zapisana jest tekstowo, a z ocenami binarnie (4 bajty na jedną ocenę). Minimalny numer grupy to $1$, a maksymalny to $20$. Możesz założyć, że dane są poprawne, w szczególności że dla każdego pliku \verb|zMgN| będzie istnieć plik \verb|grupaN|.
+
+Prowadzący, gdy zajdzie ostatni promyk słońca, wstawią punkty do USOS-a, więc nie ma za wiele czasu -- potrzebna jest automatyzacja przetwarzania ocen. 
+
+System oceniania, jak przystało na porządne systemy, jest odpowiednio zabezpieczony -- oprócz zwykłych plików istnieją także linki, które nazywają się według opisanych wcześniej reguł, ale otworzenie plików, na które wskazują, prowadzi do automatycznego niezaliczenia przedmiotu przez wszystkich studentów! Należy więc odpowiednio obsłużyć takie przypadki.
+
+\subsection*{Uwagi}
+
+Początkowy kod (\verb|sop-planb.c|) zawiera funkcje, które należy uzupełnić w tym i kolejnych etapach. Nie zmieniaj ich nazw. Możesz za to dodawać nowe funkcje oraz modyfikować argumenty istniejących. Zdefiniowana jest także zmienna globalna \verb|groups_count|. Nie definiuj innych zmiennych globalnych oraz nie korzystaj jawnie ze zmiennej globalnej w funkcjach \verb|get_groups_count|, \verb|process_file| i \verb|batch_process|.
+
+W każdym etapie na bieżąco zwalniaj wszystkie niepotrzebne zasoby,
+    czyli, między innymi, zamykaj nieużywane już pliki.
+    Jeśli dana funkcja systemowa może zwrócić błąd,
+    to należy sprawdzić,
+    czy jej wykonanie się powiodło
+    (jeśli nie, to wystarczy zamknąć program i wyświetlić informacje, że wystąpił błąd).
+
+W celu sprawdzenia Twojego rozwiązania, możesz skorzystać z przypadku testowego dostarczonego wraz z rozwiązaniem (katalog \verb|data|). Przykładowe wyjście z użyciem tego przypadku znajduje się na końcu treści zadania. Linki-pułapki prowadzą do plików z nieprawidłowymi danymi.
+
+\vskip10pt
+
+Etapy:\nopagebreak[4]
+\begin{questions} % 16 punktów
+  \question[6] 
+    Uzupełnij funkcję \verb|main|. Program powinien być uruchamiany z dokładnie    jednym parametrem pozycyjnym, określającym ścieżkę do analizowanego pliku/folderu. Po     uruchomieniu programu, program czeka na podanie na standardowym wejściu jednego z trzech słów: 
+    \begin{itemize}
+        \item \verb|groups| -- jeśli argument jest katalogiem, to wywołuje funkcję \verb|get_groups_count|; w przeciwnym przypadku zgłasza błąd i kończy działanie,
+        \item \verb|process| -- jeśli argument jest plikiem, to prosi o podanie liczby grup w pliku, a następnie wywołuje funkcję \verb|process_file|; w przeciwnym przypadku zgłasza błąd i kończy działanie,
+        \item \verb|batch| -- jeśli argument jest katalogiem, to wywołuje funkcję \verb|batch_process|; w przeciwnym przypadku zgłasza błąd i kończy działanie,
+    \end{itemize}
+    Podanie innego słowa powoduje wypisanie stosownego komunikatu i wyjście z programu.  
+    \nopagebreak[4]
+  \question[6] 
+    Uzupełnij funkcję \verb|get_groups_count|. Z podanego katalogu, wczytaj wszystkie pliki dotyczące grup. Dla pliku \verb|grupaN|, gdzie $N$ jest pewną liczbą, wypisz informację o numerze tej grupy i~jej liczebności, np. jeśli zawartość pliku \verb|grupa12| to \verb|11|, wypisz \verb|Grupa 12 zawiera 11 studentów|. Następnie, do tablicy przekazanej jako argument funkcji, pod indeksem oznaczającym numer grupy, zapisz jej liczebność. Pamiętaj o niewczytywaniu linków -- jeśli zostanie napotkany, wypisz stosowną informację. 
+    \nopagebreak[4]
+  \question[7] 
+    Uzupełnij funkcję \verb|process_file|. Wczytaj oceny za zadanie z pliku funkcją \verb|readv|. Po wczytaniu, w każdym buforze powinna znaleźć się jedna ocena. Wypisz kolejno te oceny na konsolę. Następnie zmodyfikuj te oceny, przyznając każdemu ze studentów dodatkowy punkt, a następnie zapisz wszystko do pliku funkcją \verb|writev|. Nazwa nowego pliku powinna być taka, jak pierwotnego, z~dopisanym przyrostkiem \verb|_new|, np. jeśli otwieramy plik \verb|z10g2|, plik wyjściowy powinien nazywać się \verb|z10g2_new|. Format danych w pliku wyjściowym powinien być taki sam jak w wejściowym.
+    \nopagebreak[4]
+  \question[5]
+    Uzupełnij funkcję \verb|batch_process|. Przejdź po całym drzewie katalogów i przetwórz wszystkie (i tylko te) pliki nazwane \verb|zMgN|, gdzie $M,N$ -- liczby naturalne, w sposób opisany w powyższym etapie. Nie implementuj zejść rekurencyjnych samodzielnie (użyj funkcji \verb|nftw|). Pamiętaj o niewczytywaniu linków -- jeśli zostanie napotkany, wypisz stosowną informację. Możesz użyć funkcji uzupełnionych w dwóch poprzednich etapach. Dla każdego przetwarzanego pliku z ocenami, wypisz numer grupy i~zadania oraz wczytane oceny.
+\end{questions}
+
+\subsection*{Przykładowe wyjście}
+
+\subsubsection*{Polecenie \texttt{groups}}
+
+\begin{verbatim}
+Grupa 13 ma 7 członków
+grupa5: Link encountered
+Grupa 1 ma 5 członków
+Grupa 20 ma 6 członków
+Grupa 2 ma 4 członków
+\end{verbatim}
+
+\subsubsection*{Polecenie \texttt{process}}
+
+\begin{verbatim}
+Student 0: 4pkt
+Student 1: 3pkt
+Student 2: 0pkt
+Student 3: 1pkt
+Student 4: 2pkt
+\end{verbatim}
+
+\subsubsection*{Polecenie \texttt{batch} (fragmenty)}
+
+\begin{verbatim}
+...
+z4g2: Link encountered
+...
+Grupa 2, zadanie 1:
+  Student 0: 7pkt
+  Student 1: 12pkt
+  Student 2: 4pkt
+  Student 3: 0pkt
+Grupa 20, zadanie 256:
+  Student 0: 1pkt
+  Student 1: 2pkt
+  Student 2: 4pkt
+  Student 3: 8pkt
+  Student 4: 16pkt
+  Student 5: 32pkt
+...
+d2/z55g2: Link encountered
+\end{verbatim}
+
+\end{document}

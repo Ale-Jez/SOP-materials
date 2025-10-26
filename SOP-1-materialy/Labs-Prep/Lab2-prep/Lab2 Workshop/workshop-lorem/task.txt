@@ -1,0 +1,33 @@
+Write a program that, using multiple processes, transforms text in parallel from a given text file.
+
+The program takes two parameters: file `f` and the number of child processes `n` (0 < n < 10).
+
+Busy-waiting is forbidden! Busy-waiting = a step that needs correction.
+Only low-level APIs (open/close) can be used for reading/writing files.
+Where signal handling is required, signals must be properly managed.
+Specifically, it is worth preparing a custom "sleep" function in advance (with millisecond or greater accuracy), ideally using `nanosleep`, which, when interrupted, will resume sleeping for the remaining time.
+Signal-handling functions must be lightweight. Ideally, their only content is the setting of a `last_sig` flag.
+
+1. 
+Start `n` child processes.  
+Each child process prints its PID and terminates.  
+The main process waits for the child processes to complete and then terminates.
+
+2. 
+The main process reads the file `f`.  
+The main process distributes the content of the file among the children (as evenly as possible; the last process may, for example, have fewer characters to process).  
+Each child process can only hold its assigned fragment in memory.  
+Child processes wait to receive the `SIGUSR1` signal. Upon receiving it, they print their PID and the assigned file fragment, then terminate.  
+After creating all child processes, the main process sends the `SIGUSR1` signal to all child processes.
+
+3. 
+After receiving the `SIGUSR1` signal, child processes begin processing the file character by character:  
+Every other character in the range `[a-zA-Z]` is converted to uppercase if it is lowercase, or to lowercase if it is uppercase. Non-alphabetic characters remain unchanged.  
+Example: `Ala ma kota -> alA mA kOtA`  
+After processing a character, the process sleeps for `0.25` seconds and appends it to a file named `${f}-${i}`, where `i` is the process's order number (from 1 to `n`).
+
+4. 
+Processes handle the `SIGINT` signal correctly:  
+Upon receiving `SIGINT` (Ctrl-C), the parent process sends the `SIGINT` signal to all child processes.  
+A child process, upon receiving `SIGINT`, closes all open resources and terminates.  
+If the child's sleep is interrupted, the child process resumes sleeping for the remaining time and appends the last processed character to its file.
