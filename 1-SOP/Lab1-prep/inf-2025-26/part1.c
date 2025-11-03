@@ -1,5 +1,4 @@
 #define _XOPEN_SOURCE 700
-
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -12,9 +11,6 @@
 #include <unistd.h>
 
 #define ERR(source) (perror(source), fprintf(stderr, "%s:%d\n", __FILE__, __LINE__), exit(EXIT_FAILURE))
-
-//https://github.com/mixasolop/lab1_OPS1/tree/49ca8bd9d70aa730bd34469ee8845b372097c25c
-
 
 // join 2 path. returned pointer is for newly allocated memory and must be freed
 char* join_paths(const char* path1, const char* path2)
@@ -40,6 +36,7 @@ char* join_paths(const char* path1, const char* path2)
     return strcat(res, path2);
 }
 
+
 void usage(int argc, char** argv)
 {
     (void)argc;
@@ -47,18 +44,29 @@ void usage(int argc, char** argv)
     exit(EXIT_FAILURE);
 }
 
-void parser(FILE* fptr){
+
+
+void parser(FILE* fptr)
+{
     char* lineptr = NULL;
     size_t n = -1;
-    char* token;
     char* author = NULL;
     char* title = NULL;
     char* genre = NULL;
-    while(getline(&lineptr, &n, fptr) != -1){
+    char* token;
+
+    while (getline(&lineptr, &n, fptr) != -1)
+    {
         size_t size = strlen(lineptr);
+        // Calculates the length of the string read into lineptr. This length includes the trailing newline (\n).
         lineptr[size-1] = '\0';
+        // Removes the trailing newline character by overwriting it with a null terminator, effectively ending the string one character earlier.
+        
         token = strtok(lineptr, ":");
+
+
         if((token = strtok(NULL, ":")) == NULL){
+            //no second token was found we may skip this line
             continue;
         }
         
@@ -96,17 +104,26 @@ void parser(FILE* fptr){
     free(author);
     free(title);
     free(genre);
+
+     
 }
 
-int main(int argc, char** argv) { 
-    if(argc != 2){
+
+
+
+
+
+int main(int argc, char** argv)
+{
+    if (argc != 2)
         usage(argc, argv);
-    }
-    FILE* fptr;
-    fptr = fopen(argv[1], "r");
-    if(fptr == NULL){
+
+    FILE* fptr = fopen(argv[1], "r");
+    if(fptr == NULL)
         ERR("fopen");
-    }
+    
     parser(fptr);
+    
     fclose(fptr);
 }
+
