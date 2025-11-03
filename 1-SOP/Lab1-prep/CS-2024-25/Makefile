@@ -1,19 +1,17 @@
-CC=gcc
-C_FLAGS=-Wall -g
-L_FLAGS=-fsanitize=address,undefined
+override CFLAGS=-Wall -Wextra -Wshadow -Wno-unused-parameter -g -O0 -fsanitize=address,undefined
 
-TARGET=sop-caec
-FILES=${TARGET}.o
+ifdef CI
+override CFLAGS=-Wall -Wextra -Wshadow -Werror -Wno-unused-parameter
+endif
+
+NAME=ops-secret
 
 .PHONY: clean all
 
-${TARGET} : ${FILES}
-	${CC} ${L_FLAGS} -o ${TARGET} ${FILES}
+all: ${NAME}
 
-${TARGET}.o: ${TARGET}.c
-	${CC} ${C_FLAGS} -o ${TARGET}.o -c ${TARGET}.c
-
-all: ${TARGET}
+${NAME}: ${NAME}.c
+	gcc $(CFLAGS) -o ${NAME} ${NAME}.c
 
 clean:
-	rm -f ${FILES} ${TARGET}
+	rm -f ${NAME}
