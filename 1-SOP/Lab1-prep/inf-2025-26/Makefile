@@ -15,3 +15,4 @@ ${NAME}: ${NAME}.c
 
 clean:
 	rm -f ${NAME}
+	rm -r index/

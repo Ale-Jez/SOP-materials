@@ -122,7 +122,7 @@ book_t parser(FILE* fptr)
 }
 
 
-int walk(const char *path, const struct stat *s, int type, struct FTW *f)
+int walk_title(const char *path, const struct stat *s, int type, struct FTW *f)
 {
     if(type == FTW_F){ //is a regular file?
         if(chdir("index/by_visible_title") == -1)
@@ -142,7 +142,6 @@ int walk(const char *path, const struct stat *s, int type, struct FTW *f)
         fclose(fptr);
 
         char trun_title[65];
-
         if(book.title != NULL){
             if(chdir("index/by-title") == -1){
                 ERR("chdir");
@@ -156,39 +155,10 @@ int walk(const char *path, const struct stat *s, int type, struct FTW *f)
             }
             free(str2);
         }
-
-        // BLOCK FOR 'by-genre'
-        if(book.genre != NULL && book.title != NULL) // Must have both genre and title
-        {
-            char trun_genre[65];
-            strncpy(trun_genre, book.genre, 64);
-            trun_genre[64] = '\0';
-
-            // Create path string for the genre subdirectory
-            char* genre_path = join_paths("index/by-genre", trun_genre);
-            
-            // Create the directory, ignore error if it already exists
-            if (mkdir(genre_path, 0755) == -1 && errno != EEXIST)
-                ERR("mkdir genre");
-            
-
-            // Change into the genre directory
-            if (chdir(genre_path) == -1)
-                ERR("chdir genre");
-            free(genre_path); // We are in the dir, path string no longer needed
-
-            char* str3 = join_paths("../../../", path); 
-            symlink(str3, trun_title);
-            free(str3);
-
-            if(chdir("../../..") == -1)
-                ERR("chdir");
-        }
-
-
         free(book.author);
         free(book.title);
         free(book.genre);
+
     }
     return 0;
 }
@@ -201,16 +171,17 @@ int main(int argc, char** argv)
 
 
 
-    if(mkdir("index", 0755) == -1 && errno != EEXIST)
+    if(mkdir("index", 0755) == -1)
         ERR("mkdir");
-    if(mkdir("index/by_visible_title", 0755) == -1 && errno != EEXIST)
+    if(mkdir("index/by_visible_title", 0755) == -1)
         ERR("mkdir");
-    if(mkdir("index/by-title", 0755) == -1 && errno != EEXIST)
+    if(mkdir("index/by-title", 0755) == -1)
         ERR("mkdir");
-    if(mkdir("index/by-genre", 0755) == -1 && errno != EEXIST)
+    if(mkdir("index/by-genre", 0755) == -1)
         ERR("mkdir");
-    if(nftw("library", walk, MAXFD, FTW_PHYS) != 0){
+    if(nftw("library", walk_title, MAXFD, FTW_PHYS) != 0){
         ERR("nftw");
     }
 
 }
+
