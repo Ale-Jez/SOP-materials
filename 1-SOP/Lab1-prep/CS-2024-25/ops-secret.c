@@ -58,23 +58,14 @@ int main(int argc, char** argv)
     char* path = argv[2];
     struct stat sb;
     if (lstat(path, &sb) != 0)
-    {
         ERR("Couldn't check for file status\n");
-        return EXIT_FAILURE;
-    }
 
     if (strcmp(cmd, "analyze") == 0)
     {
         if (S_ISREG(sb.st_mode) || S_ISLNK(sb.st_mode))
-        {
             analyze_file(path);
-            return EXIT_SUCCESS;
-        }
         else
-        {
             ERR("Not a regular file or a link\n");
-            return EXIT_FAILURE;
-        }
     }
 
     if (strcmp(cmd, "decode") == 0)
@@ -85,10 +76,7 @@ int main(int argc, char** argv)
             return EXIT_SUCCESS;
         }
         else
-        {
             ERR("Not a regular file\n");
-            return EXIT_FAILURE;
-        }
     }
 
     if (strcmp(argv[1], "batch") == 0)
@@ -100,21 +88,11 @@ int main(int argc, char** argv)
         }
 
         else
-        {
             ERR("Not a directory\n");
-
-
-
-
-            
-            return EXIT_FAILURE;
-        }
     }
-
     else
     {
         ERR("Inappropriate command passed\n");
         usage(argv[1]);
-        return EXIT_FAILURE;
     }
 }
