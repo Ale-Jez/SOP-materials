@@ -1,0 +1,89 @@
+\documentclass[addpoints,a4paper]{exam}
+
+\usepackage{iftex}
+\ifpdftex
+\usepackage[OT4]{fontenc}
+\fi
+
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\lhead{Name and surname: }
+\rhead{FIFO/pipe}
+\pointpoints{p.}{p.}
+\boxedpoints
+\footer{}{}{}
+\renewcommand{\thepartno}{\arabic{partno}}
+\renewcommand{\partlabel}{\thepartno.}
+
+\begin{document}
+
+\hqword{Stage}
+\hpword{Points}
+\hsword{Score}
+\htword{Total}
+\cellwidth{2cm}
+\noindent \gradetable[h]
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+\section*{L5: Roncevaux}
+
+Charlemagne, encouraged by the promise of peace from Marsile, the King of Spain, returns to France. At the rear guard, his procession is protected by his nephew, Count Roland. However, all of this is a plot by the treacherous Ganelon. Marsile’s army engages Roland’s forces in the Roncevaux Pass.
+
+
+\noindent \hspace{8cm} \parbox{10cm}{\textit{\\
+The battle is beautiful, fierce, and fierce,\\
+The Franks strike eagerly and madly,\\
+They cut off right hands, throats gurgle,\\
+They slash garments to the living flesh,\\
+Blood flows in streams across the grass\\
+}}
+
+
+In this task, we will simulate the battle in the Roncevaux pass and do so in a way that generates new lines of 'The Song of Roland' (they will be in a similar style, though not very poetic). We will use processes and unnamed pipes for this purpose. Remember to close unused pipe ends and release resources, because:
+
+
+\noindent \hspace{8cm} \parbox{10cm}{\textit{\\
+This is what every worthy knight should do,\\
+Who, in armor, on a noble steed,\\
+Valiantly and bravely rides into battle.\\
+Otherwise, he is not worth four denarii,\\
+Better for him to go to a monastery,\\
+And pray for our sins until death!\\
+}}
+
+
+Stages:\nopagebreak[4]
+\begin{questions}
+  \question[5] Upon starting, the program attempts to open two text files: \texttt{franci.txt} and \texttt{saraceni.txt}. If unsuccessful, it prints an appropriate message in the form \texttt{Franks/Saracens have not arrived on the battlefield}, depending on which file could not be opened, and then terminates. If successful, it reads and parses the contents of the files. The first line of each file contains an integer $n$, representing the number of knights. Each of the following $n$ lines specifies the characteristics of a knight in the form of three space-separated fields: their name, HP, and attack. For each knight, the program prints the message \texttt{I am Frankish/Spanish knight <name>. I will serve my king with my <HP> HP and <attack> attack}.  
+  \textit{Hint:} To simplify this, the starter code defines a constant \texttt{MAX\_KNIGHT\_NAME\_LENGTH}.
+  
+  \question[7] For each knight, the main thread creates an unnamed pipe and a child process using \texttt{fork}. Each knight should have an open read end of their own pipe and write ends to all knights of the opposing side—these will be used for simulating attacks. Close all unused pipe ends in all processes. Each child process prints the message from the first stage (the parent no longer does this) and then terminates. The parent waits for all child processes to finish.  
+  \textit{Hint:} To ensure that all unused pipes are closed, you can use the helper function \texttt{count\_descriptors}, which counts open file descriptors. Call it in each child process and print the result.
+
+  \question[6] Each knight's process executes the following operations in a loop:
+  \begin{enumerate}
+    \item Reads all available bytes from its pipe (non-blocking read). Each byte represents a hit received, and its value is subtracted from the knight’s remaining HP.
+    \item Chooses a random enemy knight and attacks them. It randomly generates the strength of the attack—an integer $S$ in the range $[0, attack]$—and writes it as a single byte to the target knight’s pipe.
+    \item Depending on the attack strength $S$, prints one of the following messages:
+    \begin{itemize}
+      \item $S = 0$: \texttt{<name> attacks his enemy, however he deflected}
+      \item $1 \leq S \leq 5$: \texttt{<name> goes to strike, he hit right and well}
+      \item $6 \leq S$: \texttt{<name> strikes powerful blow, the shield he breaks and inflicts a big wound}
+    \end{itemize}
+    \item Randomly selects a number $t$ in the range $[1,10]$ and sleeps for $t$ milliseconds.
+  \end{enumerate}
+  \textit{Hint:} To achieve random effects in child processes, use \texttt{srand(getpid())}.  
+  To improve the poetic nature of the output, you may add more phrases for attacking—but perhaps complete the last stage first.
+
+  \question[7] If a knight’s HP falls below $0$, they die. They print the message \texttt{<name> dies}, close all pipe ends, release all other resources, and terminate. A knight’s process should detect when attacking an already dead enemy (error \texttt{EPIPE} or signal \texttt{SIGPIPE}), mark them as dead to avoid attacking them again, and retry against another enemy.  
+
+  Suggested implementation: Maintain a list of enemy knights along with a variable $p$ representing the last known living enemy. If an attacked enemy $i$ is found to be dead, swap them with the $p$-th enemy in the list and decrement $p$ by 1. Other implementations (e.g., a linked list) will be accepted as long as they do not worsen complexity (e.g., randomly choosing an enemy repeatedly until finding a living one is inefficient and will not be accepted).
+
+  If a knight determines that all their enemies are dead, they also terminate.
+\end{questions}
+\end{document}

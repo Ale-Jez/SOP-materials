@@ -1,0 +1,5 @@
+Rozwiązanie etapami
+https://github.com/mixasolop/ops_lab2_prep
+
+Polecenie
+https://pages.mini.pw.edu.pl/~hermant/en/courses/operating-systems-1/l2-2025/#starting-code
